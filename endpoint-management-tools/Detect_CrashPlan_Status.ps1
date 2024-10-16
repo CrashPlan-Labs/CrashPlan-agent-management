@@ -8,28 +8,30 @@ Script can be configured to upload logs to a CrashPlan provided sharefile locati
 To Modify uncomment items in the SendLogs function, then uncomment all the calls to SendLogs.
 
 Exit code 0
-Healthy, no action needed. Possible Values for the 'CrashPlan State' value:
-    Healthy. System was first installed today.
+Healthy, no action needed. Possible Values for the 'State' or 'errorStatus' value:
+    Healthy. Authorized and running.
         No Action.
-    Healthy. System is Authorized and running.
-        No Action.
-    Healthy. System is likely not yet registered.
+    Healthy. Likely not yet registered.
         No Action
+    Healthy. First installed today.
+        No Action.
+
 Exit code 1
-Install is not health, action likely needed. Possible Values for the 'CrashPlan State' value:
-Unhealthy. System is Authorized and running, but userHome Path does not exist on the system.
+Install is not healthy, action likely needed. Possible Values for the 'State' or 'errorStatus' value:
+
+Unhealthy. Authorized and running but UserHome Path does not exist on the system.
     CrashPlan's user detection logic returned a userHome value that does not exist on the endpoint and so the :user vairable will not work. Trigger a reinstall to fix.
-Unhealthy. System is Authorized and running, but backup has never happened.
+Unhealthy. Authorized and running but Backup has not happened.
     Check settings for this system, confirm it has a valid user home, or that there are files in that location
-Unhealthy. System is Authorized and running, but backup has not happened for days= X
+Unhealthy. Authorized and running; backup has not happened for days= X
     Check settings, get logs.
-Unhealthy. System is not registered for days=X
+Unhealthy. Not registered for days= X
     Check detection logic, check to make sure that we have a vaid possible userHome, or username.
 Unhealthy. Logs have not been updated for days=X
     Grab logs then uninstall/reinstall. Uninstall/Reinstall CrashPlan
-Unhealthy. CrashPlan Service is not running, and can't start service.
-    Service Corrupted Uninstall/Reinstall CrashPlan.
-CrashPlan is not a service on this endpoint, likely not installed.
+Unhealthy. CrashPlan Service is not running. Logs last updated= X
+    Service Not Running, try starting the service or pulling logs and investigating
+Unhealthy. CrashPlan is not a service on this endpoint; likely not installed.
     CrashPlan is not installed. Trigger an install if it should be. Confirm that a version of Code42 was not installed before installing CrashPlan.
 #>
 
@@ -138,38 +140,38 @@ function CheckCrashPlanInstall {
                 if ($Authorized) {
                     if ($UserHome) {
                         if ($UserHomeValid = $false) {
-                            $PreRemediationDetectionError = "Unhealthy. System is Authorized and running, but userHome Path does not exist on the system."
+                            $PreRemediationDetectionError = "Unhealthy. Authorized and running. UserHome Path does not exist on the system."
                             $errorStatus = 1
                         }
                     }
                     if ($BackupUpdated -eq "null") {
                         if (($FirstStartTimeSpan -eq 1) -or ($FirstStartTimeSpan -eq 0)) {
-                            $PreRemediationDetectionError = "Healthy. System was first installed today."
+                            $PreRemediationDetectionError = "Healthy. First installed today."
                             $errorStatus = 0
                         }
                         else {
                             #SendLogs("Auth_no_recent_backup-$guid-")
-                            $PreRemediationDetectionError = "Unhealthy. System is Authorized and running, but backup has not happened. Logs last updated days= $LogsLastUpdated ."
+                            $PreRemediationDetectionError = "Unhealthy. Authorized and running. Backup has not happened."
                             $errorStatus = 1
                         }
                     }
                     if ($BackupUpdated -le $MinDaysHealthy) {
-                        $PreRemediationDetectionError = "Healthy. System is Authorized and running."
+                        $PreRemediationDetectionError = "Healthy. Authorized and running."
                         $errorStatus = 0
                     }
                     else {
                         #SendLogs("Auth_no_recent_backup-$guid-")
-                        $PreRemediationDetectionError = "Unhealthy. System is Authorized and running, but backup has not happened for days=" + $BackupUpdated +," Nothing to do count= $NothingToDoCount \."
+                        $PreRemediationDetectionError = "Unhealthy. Authorized and running; backup has not happened for days=" + $BackupUpdated +," Nothing to do count= $NothingToDoCount \."
                         $errorStatus = 0                    }
                 }
                 else {
                     if ($FirstStartTimeSpan -lt $MinDaysHealthy) {
-                        $PreRemediationDetectionError = "Healthy. System is likely not yet registered."
+                        $PreRemediationDetectionError = "Healthy. Likely not yet registered."
                         $errorStatus = 0
                     }
                     else {
                         #SendLogs("Not_yet_registered-$guid-")
-                        $PreRemediationDetectionError = "Unhealthy. System is not registered for days= $FirstStartTimeSpan."
+                        $PreRemediationDetectionError = "Unhealthy. Not registered for days= $FirstStartTimeSpan."
                         $errorStatus = 1
                     }
                 }
@@ -187,10 +189,10 @@ function CheckCrashPlanInstall {
         }
     }
     else {
-        $PreRemediationDetectionError = "CrashPlanService is not a registered service on this endpoint, likely not installed."
+        $PreRemediationDetectionError = "CrashPlan is not a service on this endpoint; likely not installed."
         $errorStatus = 1
     }
-    $PreRemediationDetectionOutput = "CrashPlan Running:$CrashPlanRunning, CrashPlan State:[$PreRemediationDetectionError] Logged in:$RegisteredUser, Userhome:$UserHome, UserHome valid:$UserHomeValid, Last Backup:$LastBackupDate, Logs last written:$ServiceLogLastUpdated, Guid:$Guid"
+    $PreRemediationDetectionOutput = "Running:$CrashPlanRunning, State:[$PreRemediationDetectionError] Logged in:$RegisteredUser, UserHome:$UserHome, UserHome valid:$UserHomeValid, Last Backup:$LastBackupDate, Logs last written:$ServiceLogLastUpdated, GUID:$Guid"
     return @($errorStatus,$PreRemediationDetectionOutput,$PreRemediationDetectionError)
 }
 
