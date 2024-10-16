@@ -15,24 +15,22 @@ Healthy, no action needed. Possible Values for the 'State' or 'errorStatus' valu
         No Action
     Healthy. First installed today.
         No Action.
-
 Exit code 1
 Install is not healthy, action likely needed. Possible Values for the 'State' or 'errorStatus' value:
-
-Unhealthy. Authorized and running but UserHome Path does not exist on the system.
-    CrashPlan's user detection logic returned a userHome value that does not exist on the endpoint and so the :user vairable will not work. Trigger a reinstall to fix.
-Unhealthy. Authorized and running but Backup has not happened.
-    Check settings for this system, confirm it has a valid user home, or that there are files in that location
-Unhealthy. Authorized and running; backup has not happened for days= X
-    Check settings, get logs.
-Unhealthy. Not registered for days= X
-    Check detection logic, check to make sure that we have a vaid possible userHome, or username.
-Unhealthy. Logs have not been updated for days=X
-    Grab logs then uninstall/reinstall. Uninstall/Reinstall CrashPlan
-Unhealthy. CrashPlan Service is not running. Logs last updated= X
-    Service Not Running, try starting the service or pulling logs and investigating
-Unhealthy. CrashPlan is not a service on this endpoint; likely not installed.
-    CrashPlan is not installed. Trigger an install if it should be. Confirm that a version of Code42 was not installed before installing CrashPlan.
+    Unhealthy. Authorized and running but UserHome Path does not exist on the system.
+        CrashPlan's user detection logic returned a userHome value that does not exist on the endpoint and so the :user vairable will not work. Trigger a reinstall to fix.
+    Unhealthy. Authorized and running but Backup has not happened.
+        Check settings for this system, confirm it has a valid user home, or that there are files in that location
+    Unhealthy. Authorized and running; backup has not happened for days= X
+        Check settings, get logs.
+    Unhealthy. Not registered for days= X
+        Check detection logic, check to make sure that we have a vaid possible userHome, or username.
+    Unhealthy. Logs have not been updated for days=X
+        Grab logs then uninstall/reinstall. Uninstall/Reinstall CrashPlan
+    Unhealthy. CrashPlan Service is not running. Logs last updated= X
+        Service Not Running, try starting the service or pulling logs and investigating
+    Unhealthy. CrashPlan is not a service on this endpoint; likely not installed.
+        CrashPlan is not installed. Trigger an install if it should be. Confirm that a version of Code42 was not installed before installing CrashPlan.
 #>
 
 #$ErrorSystemPreference = "SilentlyContinue"
