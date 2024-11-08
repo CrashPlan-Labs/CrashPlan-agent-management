@@ -89,7 +89,7 @@ function CheckCrashPlanInstall {
     }
     else {
         $CrashPlanService = Get-Process -name 'CrashPlanService'
-        if ($CrashPlanService -ne $null) {
+        if ([string]::IsNullOrEmpty($CrashPlanService)) {
                  $CrashPlanRunning = $true
         }
     }
@@ -163,14 +163,20 @@ function CheckCrashPlanInstall {
                         $errorStatus = 0                    }
                 }
                 else {
-                    if ($FirstStartTimeSpan -lt $MinDaysHealthy) {
-                        $PreRemediationDetectionError = "Healthy. Likely not yet registered."
-                        $errorStatus = 0
-                    }
-                    else {
-                        #SendLogs("Not_yet_registered-$guid-")
-                        $PreRemediationDetectionError = "Unhealthy. Not registered for days= $FirstStartTimeSpan."
+                    if ($RegisteredUser){
+                        $PreRemediationDetectionError = "Unhealthy. Running not Authorized. Logs have not been updated for days=$LogsLastUpdated."
                         $errorStatus = 1
+                    }
+                    else{
+                        if ($FirstStartTimeSpan -lt $MinDaysHealthy) {
+                            $PreRemediationDetectionError = "Healthy. Likely not yet registered."
+                            $errorStatus = 0
+                        }
+                        else {
+                            #SendLogs("Not_yet_registered-$guid-")
+                            $PreRemediationDetectionError = "Unhealthy. Not registered for days= $FirstStartTimeSpan."
+                            $errorStatus = 1
+                        }
                     }
                 }
             }
@@ -181,7 +187,8 @@ function CheckCrashPlanInstall {
             }
         }
         else {
-            #SendLogs("service_not_running-$guid-")  
+            #SendLogs("service_not_running-$guid-")
+            $CrashPlanRunning = $false  
             $PreRemediationDetectionError = "Unhealthy. CrashPlan Service is not running. Logs last updated= $ServiceLogLastUpdated  ."
             $errorStatus = 1
         }
@@ -190,7 +197,10 @@ function CheckCrashPlanInstall {
         $PreRemediationDetectionError = "CrashPlan is not a service on this endpoint; likely not installed."
         $errorStatus = 1
     }
-    $PreRemediationDetectionOutput = "Running:$CrashPlanRunning, State:[$PreRemediationDetectionError] Logged in:$RegisteredUser, UserHome:$UserHome, UserHome valid:$UserHomeValid, Last Backup:$LastBackupDate, Logs last written:$ServiceLogLastUpdated, GUID:$Guid"
+    $PreRemediationDetectionOutput = "Running:$CrashPlanRunning, State:[$PreRemediationDetectionError], Logged in:$RegisteredUser, UserHome:$UserHome, UserHome valid:$UserHomeValid, Last Backup:$LastBackupDate, Logs last written:$ServiceLogLastUpdated, GUID:$Guid"
+    #if you often export this file to process with excel or Google sheets replace the above line with this one for easier parsing of the data.
+    #$PreRemediationDetectionOutput = "$CrashPlanRunning, $PreRemediationDetectionError, $RegisteredUser, $UserHome, $UserHomeValid, $LastBackupDate, $ServiceLogLastUpdated, $Guid"
+
     return @($errorStatus,$PreRemediationDetectionOutput,$PreRemediationDetectionError)
 }
 
