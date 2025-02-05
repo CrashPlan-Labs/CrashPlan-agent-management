@@ -50,12 +50,12 @@ function Stop-CrashPlanServices {
     $Processes = @("CrashPlanService","CrashPlanDesktop")
  
     try {
-        foreach ($processName in $Processes) {
+        foreach ($ProcessName in $Processes) {
             # Check if the process exists and kill it
-            $process = Get-Process -Name $processName -ErrorAction SilentlyContinue
-            if ($process) {
-                Stop-Process -Name $processName -Force -ErrorAction Stop
-                while (Get-Process -Name $processName -ErrorAction SilentlyContinue) {
+            $Process = Get-Process -Name $ProcessName -ErrorAction SilentlyContinue
+            if ($Process) {
+                Stop-Process -Name $ProcessName -Force -ErrorAction Stop
+                while (Get-Process -Name $ProcessName -ErrorAction SilentlyContinue) {
                     Start-Sleep -Seconds 1
                 }
                 Write-host "Stop-CrashPlanServices: Successfully stopped process $processName."
@@ -63,27 +63,28 @@ function Stop-CrashPlanServices {
                 Write-host "Stop-CrashPlanServices: Service $processName does not exist or is not running."
             }
         }
-        foreach ($service in $Services) {
+        foreach ($Service in $Services) {
             # Check if the service exists and is running
-            $svc = Get-Service -Name $service -ErrorAction SilentlyContinue
+            $svc = Get-Service -Name $Service -ErrorAction SilentlyContinue
             if ($svc -and $svc.Status -eq 'Running') {
                 # Attempt to stop the service
-                Stop-Service -Name $service -Force -ErrorAction Stop
+                Stop-Service -Name $Service -Force -ErrorAction Stop
                 # Wait until the service is stopped
                 $svc.WaitForStatus('Stopped', [TimeSpan]::FromMinutes(1))
-                Write-host "Stop-CrashPlanServices: Successfully stopped service $service."
+                Write-host "Stop-CrashPlanServices: Successfully stopped service $Service."
             } else {
-                Write-host "Stop-CrashPlanServices: Service $service does not exist or is not running."
+                Write-host "Stop-CrashPlanServices: Service $Service does not exist or is not running."
             }
         }
         return $true
     } catch {
-        Write-Host "Stop-CrashPlanServices: Failed to stop service $service or kill process $processName. $_"
+        Write-Host "Stop-CrashPlanServices: Failed to stop service $Service or kill process $ProcessName. $_"
         return $false
     }
 }
 
 function Uninstall-CrashPlan() {
+    #To also Uninstall versions before 11.x change to (CrashPlan|Code42)
     Get-InstalledApplications | Where-Object DisplayName -Match "(CrashPlan)" | ForEach-Object {
         if ($_.QuietUninstallString) {
             Write-Host "Uninstalling $($_.DisplayName) using Quiet Uninstall String"
@@ -131,7 +132,7 @@ Write-Host "Starting CrashPlan Uninstall script."
 #stop CrashPlan Services.
 Stop-CrashPlanServices
 Uninstall-CrashPlan
-#Uncomment the function call below if you want to delete CrashPlan directories after the install. Only used if you want to perminantly remove CrashPla
+#Uncomment the function call below if you want to delete CrashPlan directories after the install. Only used if you want to perminantly remove CrashPlan
 #Remove-CrashPlanDataFolders
 
 Write-Host "Script Finished"

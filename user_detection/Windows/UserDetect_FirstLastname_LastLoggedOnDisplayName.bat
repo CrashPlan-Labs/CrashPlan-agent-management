@@ -16,7 +16,7 @@ function Find-User {
          Write-log "Regkey LastLoggedOnDisplayName not found or empty.  Will retry user detection in 60 minutes, or when reboot occurs."
          exit
      }
-     Write-Log "User name found ($username)"
+     Write-Log "Username found ($username)"
      Write-Log "DisplayName found ($displayname)"
      #Check for firstname lastname or lastname, firstname in the regkey LastLoggedOnDisplayName
      if($displayname -like "*,*"){

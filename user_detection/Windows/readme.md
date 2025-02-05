@@ -10,13 +10,11 @@ for the first time.
   user's email from the directory. For Azure, we look at one of two registry keys. For on-prem domains, we perform
   an ADSI search.  This is the default script for CrashPlan's Professional Services team.
     - This script requires an active connection to a Windows domain
-    - This script requires Powershell v.4.0 or later
 
 ### UserDetect_Explorer_AppendDomain.bat
   * This script is used to detect which user is running explorer.exe, and then append the domain of the email 
   address to the end.  The home directory is discovered by adding the username to the Users directory
   path in Windows.
-    - This script requires Powershell v.4.0 or later
 
 ### UserDetect_Registry_AppendDomain.bat
   * This script is used to detect which user last logged in using the LastLoggedOnUser registry value in HKLM, 
@@ -33,9 +31,7 @@ for the first time.
   a period, and then append the domain of the email address to the end.
     - This script requires the Full Name field for a local account to be populated with a users first name and last name
     separated with a space.
-    - This script requires Powershell v4.0 or later.
 
 ### UserDetect_ReadFromFile_User.bat
   * This script reads a text file (in this script, the default location of the file is C:\Temp\CrashPlan_User.txt) for the user
   email address, and the home directory is discovered by adding the username to the Users directory path in Windows.
-    - This script requires Powershell v4.0 or later.
