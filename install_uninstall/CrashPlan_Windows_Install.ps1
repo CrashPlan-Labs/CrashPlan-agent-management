@@ -8,8 +8,7 @@ $CrashPlanMSI = "C:\ProgramData\CrashPlan\CrashPlan.msi"
 #defining download location for latest CrashPlan client. Not used if $CrashPlanMSI is changed.
 $latestWindowsClient="https://download.crashplan.com/installs/agent/latest-win64.msi"
 #Log file location
-$ProcLog = "C:\ProgramData\CrashPlan\CrashPlan_Script_reinstall.log"
-
+$ProcLog = "C:\ProgramData\CrashPlan\log\CrashPlan_Script_reinstall.log"
 #helper functions
 function Write-Log {
     [CmdletBinding()]
@@ -72,41 +71,42 @@ function Stop-CrashPlanServices {
     $Processes = @("CrashPlanService","CrashPlanDesktop")
  
     try {
-        foreach ($processName in $Processes) {
+        foreach ($ProcessName in $Processes) {
             # Check if the process exists and kill it
-            $process = Get-Process -Name $processName -ErrorAction SilentlyContinue
-            if ($process) {
-                Stop-Process -Name $processName -Force -ErrorAction Stop
-                while (Get-Process -Name $processName -ErrorAction SilentlyContinue) {
+            $Process = Get-Process -Name $ProcessName -ErrorAction SilentlyContinue
+            if ($Process) {
+                Stop-Process -Name $ProcessName -Force -ErrorAction Stop
+                while (Get-Process -Name $ProcessName -ErrorAction SilentlyContinue) {
                     Start-Sleep -Seconds 1
                 }
-                Write-host "Stop-CrashPlanServices: Successfully stopped process $processName."
+                Write-Log "Stop-CrashPlanServices: Successfully stopped process $ProcessName."
             } else {
-                Write-host "Stop-CrashPlanServices: Service $processName does not exist or is not running."
+                Write-Log "Stop-CrashPlanServices: Service $ProcessName does not exist or is not running."
             }
         }
-        foreach ($service in $Services) {
+        foreach ($Service in $Services) {
             # Check if the service exists and is running
-            $svc = Get-Service -Name $service -ErrorAction SilentlyContinue
+            $svc = Get-Service -Name $Service -ErrorAction SilentlyContinue
             if ($svc -and $svc.Status -eq 'Running') {
                 # Attempt to stop the service
-                Stop-Service -Name $service -Force -ErrorAction Stop
+                Stop-Service -Name $Service -Force -ErrorAction Stop
                 # Wait until the service is stopped
                 $svc.WaitForStatus('Stopped', [TimeSpan]::FromMinutes(1))
-                Write-host "Stop-CrashPlanServices: Successfully stopped service $service."
+                Write-Log "Stop-CrashPlanServices: Successfully stopped service $Service."
             } else {
-                Write-host "Stop-CrashPlanServices: Service $service does not exist or is not running."
+                Write-Log "Stop-CrashPlanServices: Service $Service does not exist or is not running."
             }
         }
         return $true
     } catch {
-        Write-Log "Stop-CrashPlanServices: Failed to stop service $service or kill process $processName. $_"
+        Write-Log "Stop-CrashPlanServices: Failed to stop service $Service or kill process $ProcessName. $_"
         return $false
     }
 }
 
 function Uninstall-CrashPlan() {
-    Get-InstalledApplications | Where-Object DisplayName -Match "(CrashPlan)" | ForEach-Object {
+    #To also Uninstall versions before 11.x change to (CrashPlan|Code42)
+        Get-InstalledApplications | Where-Object DisplayName -Match "(CrashPlan)" | ForEach-Object { 
         if ($_.QuietUninstallString) {
             Write-Log "Uninstalling $($_.DisplayName) using Quiet Uninstall String"
             Write-Log $_.QuietUninstallString
@@ -123,6 +123,8 @@ function Uninstall-CrashPlan() {
             & cmd.exe /c $_.UninstalString
         }
     }
+    Get-ChildItem "C:\ProgramData\CrashPlan\" -Exclude "log",".identity" | Remove-Item -Recurse -Force #
+
 }
 
 if(!(Test-Path -Path "C:\ProgramData\CrashPlan\log\" )){
@@ -140,6 +142,8 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 Write-Log "Starting CrashPlan Reinstall script."
 #stop CrashPlan Services.
 Stop-CrashPlanServices
+#Move the newest user based identity file to the system install location
+Move-UserIdentityFile
 #always start by uninstlling CrashPlan
 Uninstall-CrashPlan
 
@@ -156,28 +160,16 @@ if( $CrashPlanMSI -eq "C:\ProgramData\CrashPlan\CrashPlan.msi")
 }
 
 #trigger CrashPlan install.
-Write-Log "Installing CrashPlan for Cloud"
+Write-Log "Installing CrashPlan"
 Write-Log "/i $CrashPlanMSI $CrashPlanArguments"
-$installArgs = "/i $CrashPlanMSI $CrashPlanArguments"
-Start-Process "msiexec.exe" -Wait -ArgumentList $installArgs
+$InstallArgs = "/i $CrashPlanMSI $CrashPlanArguments"
 
-#wait for the install to complete and CrashPlan to start (by looking at the last write time of the history log) before continuing and removing data.
-while ($true) {
-    if (Test-Path "C:\ProgramData\CrashPlan\log\history.log.0") {
-        $LastWriteTime = (Get-Item "C:\ProgramData\CrashPlan\log\history.log.0").LastWriteTime
-        $TimeSinceUpdate = (New-TimeSpan -Start $LastWriteTime -End (Get-Date)).TotalSeconds
-        
-        if ($TimeSinceUpdate -le 10) {
-            Write-Log "File exists and has been updated recently."
-            break
-        } else {
-            Write-Log "File exists but has not been updated recently. Waiting..."
-        }
-    } else {
-        Write-Log "log does not exist. Waiting..."
-    }
-    Start-Sleep -Seconds 5
-}
+Start-Process "msiexec.exe" -Wait -ArgumentList $InstallArgs -NoNewWindow
+start-sleep 180
+Write-Log "Removing $CrashPlanMSI "
+Remove-item $CrashPlanMSI
+
+$CrashPlanInstalled = Get-InstalledApplications | Where-Object DisplayName -Match "(CrashPlan)"
 
 if ($cleanup -eq $true)
 {
@@ -185,5 +177,9 @@ if ($cleanup -eq $true)
     Remove-item $CrashPlanMSI
 }
 
-Move-Item -Path $ProcLog -Destination "C:\ProgramData\CrashPlan\log\CrashPlan_Script_reinstall.log" -Force
-Write-Log "Script Finished, Closing"
+if ($CrashPlanInstalled){
+    write-Log "$($CrashPlanInstalled.DisplayName) $($CrashPlanInstalled.DisplayVersion) is now installed"
+}
+else{
+    Write-Log "CrashPlan was not installed."
+}
