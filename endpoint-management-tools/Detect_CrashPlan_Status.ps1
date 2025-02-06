@@ -1,4 +1,4 @@
-﻿<# Detect_CrashPLan_Status.ps1
+<# Detect_CrashPLan_Status.ps1
 Updated Feb 4th - 2025
 Used to determine the status of the CrashPlan service on an endpoint. Used for troubleshooting and to give context to a CrashPlan install.
 
@@ -14,6 +14,7 @@ Healthy, no action needed. Possible Values for the 'DetectionError' value:
         No Action.
     Healthy. Likely not yet registered.
         No Action
+
 Install may not be healthy, action likely needed. Possible Values for the  'DetectionError' value:
     Unhealthy. Authorized and running but UserHome Path does not exist on the system.
         CrashPlan's user detection logic returned a userHome value that does not exist on the endpoint and so the :user vairable will not work. Trigger a reinstall to fix.
@@ -237,4 +238,5 @@ $ErrorStatus = $Output[0]
 $PreRemediationDetectionOutput = $Output[1]
 
 Write-Output $PreRemediationDetectionOutput
+
 exit $ErrorStatus
