@@ -8,7 +8,8 @@ $CrashPlanMSI = "C:\ProgramData\CrashPlan\CrashPlan.msi"
 #defining download location for latest CrashPlan client. Not used if $CrashPlanMSI is changed.
 $latestWindowsClient="https://download.crashplan.com/installs/agent/latest-win64.msi"
 #Log file location
-$ProcLog = "C:\ProgramData\CrashPlan\log\CrashPlan_Script_reinstall.log"
+$ProcLog = "C:\ProgramData\CrashPlan\CrashPlan_Script_install.log"
+
 #helper functions
 function Write-Log {
     [CmdletBinding()]
@@ -106,32 +107,30 @@ function Stop-CrashPlanServices {
 
 function Uninstall-CrashPlan() {
     #To also Uninstall versions before 11.x change to (CrashPlan|Code42)
-        Get-InstalledApplications | Where-Object DisplayName -Match "(CrashPlan)" | ForEach-Object { 
+    Get-InstalledApplications | Where-Object DisplayName -Match "(CrashPlan)" | ForEach-Object { 
         if ($_.QuietUninstallString) {
-            Write-Log "Uninstalling $($_.DisplayName) using Quiet Uninstall String"
+            Write-Log "Uninstalling $($_.DisplayName), $($_.DisplayVersion)  using Quiet Uninstall String"
             Write-Log $_.QuietUninstallString
             & cmd.exe /c $_.QuietUninstallString
         }
         elseif ($_.UninstallString -like 'msiexec*') {
-            Write-Log "Uninstalling $($_.DisplayName) using msiexec /quiet /norestart"
+            Write-Log "Uninstalling $($_.DisplayName), $($_.DisplayVersion) using msiexec /quiet /norestart"
             Write-Log $_.uninstallString
             & cmd.exe /c $_.UninstallString /quiet /norestart 
         }
         else {
-            Write-Log "Uninstalling $($_.DisplayName) using provided uninstall string"
+            Write-Log "Uninstalling $($_.DisplayName), $($_.DisplayVersion) using provided uninstall string"
             Write-Log $_.uninstallString
             & cmd.exe /c $_.UninstalString
         }
     }
-    Get-ChildItem "C:\ProgramData\CrashPlan\" -Exclude "log",".identity" | Remove-Item -Recurse -Force #
-
+    Get-ChildItem "C:\ProgramData\CrashPlan\" -Exclude "log",".identity","CrashPlan_Script_reinstall.log" | Remove-Item -Recurse -Force
 }
 
-if(!(Test-Path -Path "C:\ProgramData\CrashPlan\log\" )){
-    New-Item -ItemType directory -Path "C:\ProgramData\CrashPlan\log\" 
+if(!(Test-Path -Path "C:\ProgramData\CrashPlan\" )){
+    New-Item -ItemType directory -Path "C:\ProgramData\CrashPlan\" 
     Write-Log "Created Log Directory"
 }
-
 #Script must be run as an administrator. This will make the script exit if it is not.
 if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     $wshell = New-Object -ComObject Wscript.Shell
@@ -139,12 +138,12 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     Write-Log "Not running as administrator!"
     exit
 }
-Write-Log "Starting CrashPlan Reinstall script."
+
+Write-Log "Starting CrashPlan Remediation script."
+
 #stop CrashPlan Services.
 Stop-CrashPlanServices
-#Move the newest user based identity file to the system install location
-Move-UserIdentityFile
-#always start by uninstlling CrashPlan
+#always start by uninstalling CrashPlan
 Uninstall-CrashPlan
 
 #Download latest version of CrashPlan.
@@ -152,24 +151,28 @@ Uninstall-CrashPlan
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 if( $CrashPlanMSI -eq "C:\ProgramData\CrashPlan\CrashPlan.msi")
 {
-    Write-Log "Downloading latest version of CrashPlan MSI"
+    Write-Log "Downloading latest version of CrashPlan MSI."
     $client = New-Object System.Net.WebClient
     $client.Proxy.Credentials = [System.Net.CredentialCache]::DefaultNetworkCredentials
     $client.DownloadFile($latestWindowsClient, $CrashPlanMSI)
     $cleanup = $true
 }
+else {
+    $cleanup = $false
+}
 
 #trigger CrashPlan install.
 Write-Log "Installing CrashPlan"
 Write-Log "/i $CrashPlanMSI $CrashPlanArguments"
-$InstallArgs = "/i $CrashPlanMSI $CrashPlanArguments"
+$InstallLog =  "C:\ProgramData\CrashPlan\install.msi.log"
+$InstallArgs = "/i $CrashPlanMSI $CrashPlanArguments /l*v $InstallLog"
 
 Start-Process "msiexec.exe" -Wait -ArgumentList $InstallArgs -NoNewWindow
 start-sleep 180
 Write-Log "Removing $CrashPlanMSI "
-Remove-item $CrashPlanMSI
 
 $CrashPlanInstalled = Get-InstalledApplications | Where-Object DisplayName -Match "(CrashPlan)"
+
 
 if ($cleanup -eq $true)
 {
@@ -177,9 +180,15 @@ if ($cleanup -eq $true)
     Remove-item $CrashPlanMSI
 }
 
+
 if ($CrashPlanInstalled){
     write-Log "$($CrashPlanInstalled.DisplayName) $($CrashPlanInstalled.DisplayVersion) is now installed"
 }
 else{
     Write-Log "CrashPlan was not installed."
+}
+
+if(Test-Path -Path "C:\ProgramData\CrashPlan\log\" ){
+    Move-Item $ProcLog "C:\ProgramData\CrashPlan\log\CrashPlan_Script_install.log"
+    Move-Item $InstallLog "C:\ProgramData\CrashPlan\log\install.msi.log"
 }
