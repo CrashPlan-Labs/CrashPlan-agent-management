@@ -173,6 +173,7 @@ function CheckCrashPlanInstall {
                         #SendLogs("Auth_no_recent_backup-$guid-")
                         $DetectionError = "Unhealthy. Authorized and running. Backup has not happened."
                         $ErrorStatus = 0
+                        }
                 }
                 if ($BackupUpdated -le $MinDaysHealthy) {
                     $DetectionError = "Healthy. Authorized and running."
