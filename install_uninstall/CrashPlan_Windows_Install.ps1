@@ -1,7 +1,7 @@
 #CrashPlan_Windows_Install.ps1
 
 #Declare arguments and enter options. Modifications of options are only here at the beginning of the script.
-#CrashPlan Arguments are found in the Admin console under client management/Deployment 
+#CrashPlan Arguments are found in the Admin console under Client Management --> Deployment 
 $CrashPlanArguments=''
 #Change $CrashPlanMSI to a different path if you want to use a local installer and not one downloaded from the internet
 $CrashPlanMSI = "C:\ProgramData\CrashPlan\CrashPlan.msi"
@@ -152,10 +152,16 @@ Uninstall-CrashPlan
 if( $CrashPlanMSI -eq "C:\ProgramData\CrashPlan\CrashPlan.msi")
 {
     Write-Log "Downloading latest version of CrashPlan MSI."
-    $client = New-Object System.Net.WebClient
-    $client.Proxy.Credentials = [System.Net.CredentialCache]::DefaultNetworkCredentials
-    $client.DownloadFile($latestWindowsClient, $CrashPlanMSI)
-    $cleanup = $true
+    try {
+        $client = New-Object System.Net.WebClient
+        $client.Proxy.Credentials = [System.Net.CredentialCache]::DefaultNetworkCredentials
+        $client.DownloadFile($latestWindowsClient, $CrashPlanMSI)
+        $cleanup = $true
+    }
+    catch {
+        Write-Log "Unable to download the latest version."
+        $cleanup = $false
+    }
 }
 else {
     $cleanup = $false
@@ -173,13 +179,11 @@ Write-Log "Removing $CrashPlanMSI "
 
 $CrashPlanInstalled = Get-InstalledApplications | Where-Object DisplayName -Match "(CrashPlan)"
 
-
 if ($cleanup -eq $true)
 {
     Write-Log "Removing $CrashPlanMSI file"
     Remove-item $CrashPlanMSI
 }
-
 
 if ($CrashPlanInstalled){
     write-Log "$($CrashPlanInstalled.DisplayName) $($CrashPlanInstalled.DisplayVersion) is now installed"
@@ -189,6 +193,6 @@ else{
 }
 
 if(Test-Path -Path "C:\ProgramData\CrashPlan\log\" ){
-    Move-Item $ProcLog "C:\ProgramData\CrashPlan\log\CrashPlan_Script_install.log"
-    Move-Item $InstallLog "C:\ProgramData\CrashPlan\log\install.msi.log"
+    Move-Item $ProcLog "C:\ProgramData\CrashPlan\log\CrashPlan_Script_install.log" -Force
+    Move-Item $InstallLog "C:\ProgramData\CrashPlan\log\install.msi.log" -Force
 }
