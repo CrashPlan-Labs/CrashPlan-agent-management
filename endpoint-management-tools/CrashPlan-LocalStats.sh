@@ -36,17 +36,30 @@ CrashPlanPath="/Applications/CrashPlan.app"
 guid=$(/usr/bin/awk -F '=' '/guid/{print $2}' /Library/Application\ Support/CrashPlan/.identity 2>/dev/null)
 
 if [[ -d "$CrashPlanPath" ]]; then
-    CrashPlan_base_log_directory="/Library/Logs/CrashPlan/"
+    CrashPlan_base_log_directory_pre116="/Library/Logs/CrashPlan/"
+    CrashPlan_base_log_directory_116="/Library/Application Support/CrashPlan/log/"
+    if [[ -d "$CrashPlan_base_log_directory_pre116" ]]; then 
+         CrashPlan_base_log_directory=$CrashPlan_base_log_directory_pre116
+    else
+        CrashPlan_base_log_directory=$CrashPlan_base_log_directory_116
+    fi
 else 
     for user in /Users/*; do
         if [[ -e "$user/Applications/CrashPlan.app" ]]; then
             CrashPlanPath="$user/Applications/CrashPlan.app"
-            CrashPlan_base_log_directory="$user/Library/Logs/CrashPlan/"
+            CrashPlan_base_log_directory_pre116="$user/Library/Logs/CrashPlan/"
+            CrashPlan_base_log_directory_116="$user/Library/Application Support/CrashPlan/log/"
+            if [[ -d "$CrashPlan_base_log_directory_pre116" ]]; then 
+                CrashPlan_base_log_directory=$CrashPlan_base_log_directory_pre116
+            else
+                CrashPlan_base_log_directory=$CrashPlan_base_log_directory_116
+            fi
             guid=$(/usr/bin/awk -F '=' '/guid/{print $2}' "$user"/Library/Application\ Support/CrashPlan/.identity 2>/dev/null)
             userInstall=". User based install."
         fi
     done
 fi
+
 # Sets value of CrashPlan Log files, change if running against local logs.
 CrashPlanAppLog="${CrashPlan_base_log_directory}app.log"
 CrashPlanServiceLog="${CrashPlan_base_log_directory}service.log.0"
