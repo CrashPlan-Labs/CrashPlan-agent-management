@@ -82,5 +82,5 @@ hdiutil detach /Volumes/CrashPlan
 rm "/Library/Application Support/CrashPlan/CrashPlanInstaller.dmg"
 echo "Finished install and cleanup." | tee -a "$file"
 
-mv "$file" /Library/Logs/CrashPlan/CrashPlanScriptInstall.log
-echo "Install log file can be found in /Library/Logs/CrashPlan/" | tee -a "$file"
+mv "$file" /Library/Application\ Support/CrashPlan/log/CrashPlan/CrashPlanScriptInstall.log
+echo "Install log file can be found in //Library/Application\ Support/CrashPlan/log/" | tee -a "$file"
