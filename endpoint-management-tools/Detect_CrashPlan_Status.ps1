@@ -1,5 +1,5 @@
 <# Detect_CrashPLan_Status.ps1
-Updated Feb 4th - 2025
+Updated April 15th - 2025
 Used to determine the status of the CrashPlan service on an endpoint. Used for troubleshooting and to give context to a CrashPlan install.
 
 Responses and Actions:
@@ -161,58 +161,58 @@ function CheckCrashPlanInstall {
             $BackupUpdated =  $(NEW-TIMESPAN -Start $LastBackupDate -End $(Get-Date)).Days
         }
     }
-    if ($null -ne $CrashPlanService) {
-        if ($CrashPlanRunning) {
-            if ($LogsLastUpdated -lt $MinDaysHealthy) {
-                if ($Authorized) {
-                    if (!$UserHomeValid) {
-                        $DetectionError = "Unhealthy. Authorized and running. UserHome Path does not exist on the system."
-                        $ErrorStatus = 0
-                    }
-                    if ($BackupUpdated -eq "null") {
-                        #SendLogs("Auth_no_recent_backup-$guid-")
-                        $DetectionError = "Unhealthy. Authorized and running. Backup has not happened."
-                        $ErrorStatus = 0
-                        }
-                }
-                if ($BackupUpdated -le $MinDaysHealthy) {
-                    $DetectionError = "Healthy. Authorized and running."
-                    $ErrorStatus = 0
-                }
-                else {
-                    if ($NothingToDoCount -gt 10) {
-                        #SendLogs("Auth_no_recent_backup-$guid-")
-                        $DetectionError = "Healthy. Authorized and running; days since last file sent=" + $BackupUpdated+"; Nothing to do count= $NothingToDoCount."
-                        $ErrorStatus = 0   
-                    }
-                    else {
-                        #SendLogs("Auth_no_recent_backup-$guid-")
-                        $DetectionError = "Unhealthy. Authorized and running; backup has not happened for days=$BackupUpdated."
-                        $ErrorStatus = 0   
-                    }
-                }
-                    else {
-                        if ($RegisteredUser){
-                            $DetectionError = "Unhealthy. Running not Authorized. Logs have not been updated for days=$LogsLastUpdated."
+        if ($null -ne $CrashPlanService) {
+            if ($CrashPlanRunning) {
+                if ($LogsLastUpdated -lt $MinDaysHealthy) {
+                    if ($Authorized) {
+                        if (!$UserHomeValid) {
+                            $DetectionError = "Unhealthy. Authorized and running. UserHome Path does not exist on the system."
                             $ErrorStatus = 0
                         }
-                        else{
-                            if ($FirstDeployTimeSpan -lt $MinDaysHealthy) {
-                                $DetectionError = "Healthy. Likely not yet registered."
+                        if ($BackupUpdated -eq "null") {
+                            #SendLogs("Auth_no_recent_backup-$guid-")
+                            $DetectionError = "Unhealthy. Authorized and running. Backup has not happened."
+                            $ErrorStatus = 0
+                    }
+                    if ($BackupUpdated -le $MinDaysHealthy) {
+                        $DetectionError = "Healthy. Authorized and running."
+                        $ErrorStatus = 0
+                    }
+                    else {
+                        if ($NothingToDoCount -gt 10) {
+                            #SendLogs("Auth_no_recent_backup-$guid-")
+                            $DetectionError = "Healthy. Authorized and running; days since last file sent=" + $BackupUpdated+"; Nothing to do count= $NothingToDoCount."
+                            $ErrorStatus = 0   
+                        }
+                        else {
+                            #SendLogs("Auth_no_recent_backup-$guid-")
+                            $DetectionError = "Unhealthy. Authorized and running; backup has not happened for days=$BackupUpdated."
+                            $ErrorStatus = 0   
+                        }
+                    }
+                        else {
+                            if ($RegisteredUser){
+                                $DetectionError = "Unhealthy. Running not Authorized. Logs have not been updated for days=$LogsLastUpdated."
                                 $ErrorStatus = 0
                             }
-                            else {
-                                #SendLogs("Not_yet_registered-$guid-")
-                                $DetectionError = "Unhealthy. Not registered for days= $FirstDeployTimeSpan."
-                                $ErrorStatus = 0
-                            }
+                            else{
+                                if ($FirstDeployTimeSpan -lt $MinDaysHealthy) {
+                                    $DetectionError = "Healthy. Likely not yet registered."
+                                    $ErrorStatus = 0
+                                }
+                                else {
+                                    #SendLogs("Not_yet_registered-$guid-")
+                                    $DetectionError = "Unhealthy. Not registered for days= $FirstDeployTimeSpan."
+                                    $ErrorStatus = 0
+                                }
+                        }
                     }
                 }
-            }
-            else {
-                #SendLogs("Logs_not_updating-")
-                $DetectionError = "Unhealthy. Logs have not been updated for days=$LogsLastUpdated."
-                $ErrorStatus = 1
+                else {
+                    #SendLogs("Logs_not_updating-")
+                    $DetectionError = "Unhealthy. Logs have not been updated for days=$LogsLastUpdated."
+                    $ErrorStatus = 1
+                }
             }
         }
         else {
