@@ -17,7 +17,7 @@ function main () {
 	fi
 }
 function writeLog () {
-	echo "$(date) - $@" >> /Library/Logs/CrashPlan/userDetect_Result.log
+	echo "$(date) - $@" >> /Library/Application\ Support/CrashPlan/log/userDetect_Result.log
 }
 function ask () {
 	osascript <<EOF - 2>/dev/null
