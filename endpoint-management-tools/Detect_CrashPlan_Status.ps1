@@ -1,5 +1,4 @@
 ﻿<# Detect_CrashPLan_Status.ps1
-Updated April 15th - 2025
 Used to determine the status of the CrashPlan service on an endpoint. Used for troubleshooting and to give context to a CrashPlan install.
 
 Responses and Actions:
