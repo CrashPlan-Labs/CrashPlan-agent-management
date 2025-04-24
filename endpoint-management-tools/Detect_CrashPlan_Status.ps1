@@ -1,4 +1,4 @@
-<# Detect_CrashPLan_Status.ps1
+﻿<# Detect_CrashPLan_Status.ps1
 Updated April 15th - 2025
 Used to determine the status of the CrashPlan service on an endpoint. Used for troubleshooting and to give context to a CrashPlan install.
 
@@ -35,7 +35,7 @@ Install is not healthy, or there is no install. Remediation script will reinstal
 #>
 #$ErrorSystemPreference = "SilentlyContinue"
 $MinDaysHealthy = 7
-
+$DateFormat = 'yyyy-MM-dd'
 #Test for all possible locations CrashPlan could be installed
 if (Test-Path -Path "C:\ProgramData\CrashPlan\.identity" -PathType Leaf) {
     $CrashPlanBasePath = "C:\ProgramData\CrashPlan"
@@ -130,7 +130,7 @@ function CheckCrashPlanInstall {
      if (Test-Path -Path $ServiceLogPath -PathType Leaf) {
          $ServiceLog = Get-Content -Path $ServiceLogPath
          #Get the last time the service log updated. If the service is running then the log will exist.             
-         $ServiceLogLastUpdated = $(Get-Item -Path $ServiceLogPath).lastwritetime.Date | Get-Date -Format yyyy-MM-dd
+         $ServiceLogLastUpdated = $(Get-Item -Path $ServiceLogPath).lastwritetime | Get-Date -Format ${DateFormat}
          $LogsLastUpdated =  $(NEW-TIMESPAN -Start $ServiceLogLastUpdated -End $(Get-Date)).Days
          $FirstDeployLine = $($ServiceLog | Select-String -pattern 'Deploy:: Retrieving deployment package' | Select-Object line -first 1)
          if ($null -ne $FirstDeployLine) {
@@ -138,7 +138,7 @@ function CheckCrashPlanInstall {
              if ($FirstDeployDateFound) {
                  $FirstDeployDayString = $matches[0]
              }
-             $FirstDeployDay = [datetime]::ParseExact($FirstDeployDayString, 'MM.dd.yy', [System.Globalization.CultureInfo]::GetCultureInfo('en-US')).ToString('yyyy-MM-dd')
+             $FirstDeployDay = [datetime]::ParseExact($FirstDeployDayString, 'MM.dd.yy', [System.Globalization.CultureInfo]::GetCultureInfo('en-US')).ToString($DateFormat)
              $FirstDeployTimeSpan =  $(NEW-TIMESPAN -Start $FirstDeployDay -End $(Get-Date)).Days
          }
          $NothingToDoCount = $($ServiceLog | Select-String -pattern 'Periodic check: Nothing to do, indicate backup activity for all sets','scanDone. backupComplete=true' | Measure-Object | Select-Object -ExpandProperty Count)
@@ -148,11 +148,11 @@ function CheckCrashPlanInstall {
          #Get Last Backup Time if the service is Authorized
          $LastBackupDate_line = $($BackupLog | Select-Object -Last 1)
          if ($LastBackupDate_line) {
-             $BackupLogDateFound = $LastBackupDate_line -match '\d{2}\/\d{2}\/\d{2}'
+             $BackupLogDateFound = $LastBackupDate_line -match '\d{2}\/\d{2}\/\d{2} \d{2}:\d{2}[AP]M'
              if ($BackupLogDateFound) {
                  $LastBackupDateString = $matches[0]
              }
-             $LastBackupDate = [datetime]::ParseExact($LastBackupDateString, 'MM/dd/yy', [System.Globalization.CultureInfo]::GetCultureInfo('en-US')).ToString('yyyy-MM-dd')
+             $LastBackupDate = [datetime]::ParseExact($LastBackupDateString, 'MM/dd/yy hh:mmtt', [System.Globalization.CultureInfo]::GetCultureInfo('en-US')).ToString($DateFormat)
          } 
         else {
             $LastBackupDate = "null"
