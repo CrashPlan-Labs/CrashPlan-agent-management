@@ -104,12 +104,12 @@ function CheckCrashPlanInstall {
                  $CrashPlanRunning = $true
         }
     }
-     #Get the Authorized status of the endpoint. true means that a user is assigned to the device. false could mean that it's in user detection mode
-     $AppLogPath = "$CrashPlanBasePath\log\app.log"
-     $ServiceLogPath = "$CrashPlanBasePath\log\service.log.0"
-     $BackupLogPath = "$CrashPlanBasePath\log\backup_files.log.0"
-     
-     if ((Test-Path -Path $AppLogPath -PathType Leaf) -and (Test-FileUnlocked $AppLogPath)) {
+    #Get the Authorized status of the endpoint. true means that a user is assigned to the device. false could mean that it's in user detection mode
+    $AppLogPath = "$CrashPlanBasePath\log\app.log"
+    $ServiceLogPath = "$CrashPlanBasePath\log\service.log.0"
+    $BackupLogPath = "$CrashPlanBasePath\log\backup_files.log.0"
+    
+    if ((Test-Path -Path $AppLogPath -PathType Leaf) -and (Test-FileUnlocked $AppLogPath)) {
          $AppLog = Get-Content -Path $AppLogPath
          $ServiceModel = $AppLog | Select-String 'ServiceModel.authorized'
          $Authorized = [System.Convert]::ToBoolean($("$ServiceModel".Replace(" ","").Split("=")[1]))
@@ -125,8 +125,8 @@ function CheckCrashPlanInstall {
          else {
              $UserHomeValid = Test-Path -Path $UserHome
          }
-     }
-     if (Test-Path -Path $ServiceLogPath -PathType Leaf) {
+    }
+    if (Test-Path -Path $ServiceLogPath -PathType Leaf) {
          $ServiceLog = Get-Content -Path $ServiceLogPath
          #Get the last time the service log updated. If the service is running then the log will exist.             
          $ServiceLogLastUpdated = $(Get-Item -Path $ServiceLogPath).lastwritetime | Get-Date -Format ${DateFormat}
@@ -141,8 +141,8 @@ function CheckCrashPlanInstall {
              $FirstDeployTimeSpan =  $(NEW-TIMESPAN -Start $FirstDeployDay -End $(Get-Date)).Days
          }
          $NothingToDoCount = $($ServiceLog | Select-String -pattern 'Periodic check: Nothing to do, indicate backup activity for all sets','scanDone. backupComplete=true' | Measure-Object | Select-Object -ExpandProperty Count)
-      }
-     if (Test-Path -Path $BackupLogPath -PathType Leaf) {
+    }
+    if (Test-Path -Path $BackupLogPath -PathType Leaf) {
          $BackupLog = Get-Content -Path $BackupLogPath
          #Get Last Backup Time if the service is Authorized
          $LastBackupDate_line = $($BackupLog | Select-Object -Last 1)
@@ -160,18 +160,18 @@ function CheckCrashPlanInstall {
             $BackupUpdated =  $(NEW-TIMESPAN -Start $LastBackupDate -End $(Get-Date)).Days
         }
     }
-        if ($null -ne $CrashPlanService) {
-            if ($CrashPlanRunning) {
-                if ($LogsLastUpdated -lt $MinDaysHealthy) {
-                    if ($Authorized) {
-                        if (!$UserHomeValid) {
-                            $DetectionError = "Unhealthy. Authorized and running. UserHome Path does not exist on the system."
-                            $ErrorStatus = 0
-                        }
-                        if ($BackupUpdated -eq "null") {
-                            #SendLogs("Auth_no_recent_backup-$guid-")
-                            $DetectionError = "Unhealthy. Authorized and running. Backup has not happened."
-                            $ErrorStatus = 0
+    if ($null -ne $CrashPlanService) {
+        if ($CrashPlanRunning) {
+            if ($LogsLastUpdated -lt $MinDaysHealthy) {
+                if ($Authorized) {
+                    if (!$UserHomeValid) {
+                        $DetectionError = "Unhealthy. Authorized and running. UserHome Path does not exist on the system."
+                        $ErrorStatus = 0
+                    }
+                    if ($BackupUpdated -eq "null") {
+                        #SendLogs("Auth_no_recent_backup-$guid-")
+                        $DetectionError = "Unhealthy. Authorized and running. Backup has not happened."
+                        $ErrorStatus = 0
                     }
                     if ($BackupUpdated -le $MinDaysHealthy) {
                         $DetectionError = "Healthy. Authorized and running."
@@ -189,29 +189,29 @@ function CheckCrashPlanInstall {
                             $ErrorStatus = 0   
                         }
                     }
+                }
+                else {
+                    if ($RegisteredUser){
+                        $DetectionError = "Unhealthy. Running not Authorized. Logs have not been updated for days=$LogsLastUpdated."
+                        $ErrorStatus = 0
+                    }
+                    else {
+                        if ($FirstDeployTimeSpan -lt $MinDaysHealthy) {
+                            $DetectionError = "Healthy. Likely not yet registered."
+                            $ErrorStatus = 0
+                        }
                         else {
-                            if ($RegisteredUser){
-                                $DetectionError = "Unhealthy. Running not Authorized. Logs have not been updated for days=$LogsLastUpdated."
-                                $ErrorStatus = 0
-                            }
-                            else{
-                                if ($FirstDeployTimeSpan -lt $MinDaysHealthy) {
-                                    $DetectionError = "Healthy. Likely not yet registered."
-                                    $ErrorStatus = 0
-                                }
-                                else {
-                                    #SendLogs("Not_yet_registered-$guid-")
-                                    $DetectionError = "Unhealthy. Not registered for days= $FirstDeployTimeSpan."
-                                    $ErrorStatus = 0
-                                }
+                            #SendLogs("Not_yet_registered-$guid-")
+                            $DetectionError = "Unhealthy. Not registered for days= $FirstDeployTimeSpan."
+                            $ErrorStatus = 0
                         }
                     }
                 }
-                else {
-                    #SendLogs("Logs_not_updating-")
-                    $DetectionError = "Unhealthy. Logs have not been updated for days=$LogsLastUpdated."
-                    $ErrorStatus = 1
-                }
+            }
+            else {
+                #SendLogs("Logs_not_updating-")
+                $DetectionError = "Unhealthy. Logs have not been updated for days=$LogsLastUpdated."
+                $ErrorStatus = 1
             }
         }
         else {
