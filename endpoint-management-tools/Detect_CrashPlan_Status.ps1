@@ -225,9 +225,9 @@ function CheckCrashPlanInstall {
         $DetectionError = "CrashPlan is not a service on this endpoint; likely not installed."
         $ErrorStatus = 1
     }
-    $PreRemediationDetectionOutput = "Running:$CrashPlanRunning, State:[$DetectionError], Authorized: $Authorized, Logged in:$RegisteredUser, UserHome:$UserHome, UserHome valid:$UserHomeValid, Last Backup:$LastBackupDate, Logs last written:$ServiceLogLastUpdated, GUID:$Guid"
+    $PreRemediationDetectionOutput = "Running:$CrashPlanRunning, State:[$DetectionError], User Install:$UserInstall, Authorized: $Authorized, Logged in:$RegisteredUser, UserHome:$UserHome, UserHome valid:$UserHomeValid, Last Backup:$LastBackupDate, Logs last written:$ServiceLogLastUpdated, GUID:$Guid"
     #if you often export this file to process with excel or Google sheets replace the above line with this one for easier parsing of the data.
-    #$PreRemediationDetectionOutput = "$CrashPlanRunning, $DetectionError, $Authorized, $RegisteredUser, $UserHome, $UserHomeValid, $LastBackupDate, $ServiceLogLastUpdated, $Guid"
+    #$PreRemediationDetectionOutput = "$CrashPlanRunning, $DetectionError,$UserInstall, $Authorized, $RegisteredUser, $UserHome, $UserHomeValid, $LastBackupDate, $ServiceLogLastUpdated, $Guid"
 
     return @($ErrorStatus,$PreRemediationDetectionOutput)
 }
