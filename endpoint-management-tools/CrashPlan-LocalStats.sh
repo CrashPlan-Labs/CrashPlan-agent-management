@@ -31,9 +31,15 @@
 #Define min_days_healthy as the amount of days an agent can be unregistered, not be backing up, or have the logs not being updated for before switching to an error state.
 min_days_healthy=7
 
+#Grab the guid from the CrashPlan .identity file, if it exists.
+if [[ -e /Library/Application\ Support/CrashPlan/.identity ]]; then
+    guid=$(/usr/bin/awk -F '=' '/guid/{print $2}' /Library/Application\ Support/CrashPlan/.identity 2>/dev/null)
+else
+    guid=""
+fi
+
 # CrashPlan Application Path
 CrashPlanPath="/Applications/CrashPlan.app"
-guid=$(/usr/bin/awk -F '=' '/guid/{print $2}' /Library/Application\ Support/CrashPlan/.identity 2>/dev/null)
 
 if [[ -d "$CrashPlanPath" ]]; then
     CrashPlan_base_log_directory_pre116="/Library/Logs/CrashPlan/"
@@ -44,6 +50,7 @@ if [[ -d "$CrashPlanPath" ]]; then
         CrashPlan_base_log_directory=$CrashPlan_base_log_directory_116
     fi
 else 
+    userInstall=""
     for user in /Users/*; do
         if [[ -e "$user/Applications/CrashPlan.app" ]]; then
             CrashPlanPath="$user/Applications/CrashPlan.app"
@@ -54,7 +61,6 @@ else
             else
                 CrashPlan_base_log_directory=$CrashPlan_base_log_directory_116
             fi
-            guid=$(/usr/bin/awk -F '=' '/guid/{print $2}' "$user"/Library/Application\ Support/CrashPlan/.identity 2>/dev/null)
             userInstall=". User based install."
         fi
     done
@@ -65,11 +71,11 @@ CrashPlanAppLog="${CrashPlan_base_log_directory}app.log"
 CrashPlanServiceLog="${CrashPlan_base_log_directory}service.log.0"
 CrashPlanBackupLog="${CrashPlan_base_log_directory}backup_files.log.0"
 # Check if CrashPlan is installed before anything else, but record if a guid was found.
-if [[ ! -d "$CrashPlanPath" ]]; then
-    if [ -n "${guid}" ];then
+if [[ ! -e "$CrashPlanPath" ]]; then
+    if [ "${guid}" = "" ]; then
         echo "<result>Not Installed${userInstall}</result>"
-    else 
-        echo "<result>Not Installed, but CrashPlan .identiy found guid:${guid}${userInstall}</result>"
+    else
+        echo "<result>Not Installed, but CrashPlan .identity found guid:${guid}${userInstall}</result>"
     fi
     exit 0
 fi
