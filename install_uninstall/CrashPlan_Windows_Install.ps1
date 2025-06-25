@@ -151,7 +151,9 @@ Uninstall-CrashPlan
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 if( $CrashPlanMSI -eq "C:\ProgramData\CrashPlan\CrashPlan.msi")
 {
-    Write-Log "Downloading latest version of CrashPlan MSI."
+    $response = invoke-webRequest https://download.crashplan.com/installs/agent/latest-win64.msi -method Head -MaximumRedirection 0 -ErrorAction SilentlyContinue
+    $version = $($($response.Headers.Location -split '/')[6])
+    Write-Log "Downloading CrashPlan version: $version."
     try {
         $client = New-Object System.Net.WebClient
         $client.Proxy.Credentials = [System.Net.CredentialCache]::DefaultNetworkCredentials
@@ -159,7 +161,7 @@ if( $CrashPlanMSI -eq "C:\ProgramData\CrashPlan\CrashPlan.msi")
         $cleanup = $true
     }
     catch {
-        Write-Log "Unable to download the latest version."
+        Write-Log "Unable to download CrashPlan $version."
         $cleanup = $false
     }
 }
