@@ -15,6 +15,7 @@ function Find-User {
      $AGENT_USERNAME = ($fullname -replace " ",".") + '@domain.com'
      Write-Log "Email assembled from full name ($AGENT_USERNAME)"
      $ExcludedUsers = @(
+          'system'
           'user1'
           'user2'
           'user3'

@@ -13,6 +13,7 @@ function Find-User {
      $AGENT_USERNAME = Get-Content $env:HOMEDRIVE\temp\CrashPlan_User.txt
      Write-Log "Email read from file ($AGENT_USERNAME)"
      $ExcludedUsers = @(
+          'system'
           'user1'
           'user2'
           'user3'
