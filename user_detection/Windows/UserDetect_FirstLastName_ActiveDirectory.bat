@@ -9,7 +9,8 @@ set RealName=%DisplayName: =.%
 set Domain=@domain.com
 
 REM List of Excluded users that shouldn't be used for CrashPlan install.
-FOR %%G IN ("user1"
+FOR %%G IN ("system"
+            "user1"
             "user2"
             "user3"
             "admin"

@@ -13,6 +13,7 @@ function Find-User {
      $AGENT_USERNAME = $username + '@domain.com'
      Write-Log "Email assembled by appending domain ($AGENT_USERNAME)"
      $ExcludedUsers = @(
+          'system'
           'user1'
           'user2'
           'user3'

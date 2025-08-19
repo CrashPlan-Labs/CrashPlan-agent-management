@@ -8,6 +8,7 @@ goto:eof
 #>
 #Add users to this list that CrashPlan should not register with
 $ExcludedUsers = @(
+          'system'
           'user1'
           'user2'
           'user3'
