@@ -52,7 +52,7 @@ function Find-User {
         Write-Log "Username found via ADSI domain lookup: ($AGENT_USERNAME)"
     }
     if (Check-Excluded-Users $username $AGENT_USERNAME) {
-        Write-Log "Excluded or null email address detected ($username).  Will retry user detection in 60 minutes, or when reboot occurs."
+        Write-Log "Excluded or null email address detected ($username, $AGENT_USERNAME).  Will retry user detection in 60 minutes, or when service restart occurs."
         exit
     }
     
@@ -63,7 +63,7 @@ function Find-User {
     if (!$AGENT_USER_HOME) {
         Write-Log "User home query from WMI failed. Using fallback home detection method"
         if (Check-Excluded-Users $ExplorerUser $AGENT_USERNAME) {
-            Write-Log "Excluded or null local user detected ($ExplorerUser).  Will retry user detection in 60 minutes, or when reboot occurs."
+            Write-Log "Excluded or null local user detected ($ExplorerUser).  Will retry user detection in 60 minutes, or when service restart occurs."
             exit
         } else {
         if (!$env:HOMEDRIVE) {
