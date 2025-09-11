@@ -30,7 +30,12 @@ function Find-User {
      $AGENT_USER_HOME = Get-CimInstance Win32_UserProfile -Filter "SID = '$($wmiuser.SID)'" | Select-Object -ExpandProperty LocalPath
      if (!$AGENT_USER_HOME) {
           Write-Log "User home query from WMI failed. Using fallback home detection method"
-          $AGENT_USER_HOME = "$env:HOMEDRIVE\Users\$username"
+          if (!$env:HOMEDRIVE) {
+               Write-Log "HOMEDRIVE environment variable not set. Defaulting to C:"
+               $AGENT_USER_HOME = "C:\Users\$username"
+          } else {
+               $AGENT_USER_HOME = "$env:HOMEDRIVE\Users\$username"
+          }
           Write-Log "User home set by appending $username to home path ($AGENT_USER_HOME)"
      } ELSE {
           Write-Log "User home queried from WMI successfully ($AGENT_USER_HOME)"
