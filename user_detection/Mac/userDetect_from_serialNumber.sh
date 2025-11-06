@@ -18,6 +18,6 @@ function main() {
    fi
 }
 function writeLog () {
-	echo "$(date) - $@"  >> /Library/Application\ Support/CrashPlan/log/userDetect_Result.log
+	echo "$(date) - $@" >> /Library/Application\ Support/CrashPlan/log/userDetect_Result.log
 }
 main "$@"
