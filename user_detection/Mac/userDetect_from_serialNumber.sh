@@ -6,7 +6,8 @@ function main() {
         writeLog "Excluded or null username detected ($user). Will retry user detection in 60 minutes, or when reboot occurs."
         exit
 	else
-		local AGENT_USERNAME=$(hostname)@domain.com
+		local serialNumber=$(ioreg -l | grep IOPlatformSerialNumber | awk '{gsub(/"/, ""); print $4}')
+  		local AGENT_USERNAME=${serialNumber}@domain.com
         writeLog "Grabbing hostname from system: $AGENT_USERNAME"
 		local AGENT_USER_HOME=$(dscl . -read "/users/${user}" NFSHomeDirectory | cut -d ' ' -f 2)
 		writeLog "Home directory read from dscl ($AGENT_USER_HOME)"
@@ -17,6 +18,6 @@ function main() {
    fi
 }
 function writeLog () {
-	echo "$(date) - $@" >> /Library/Application\ Support/CrashPlan/log/userDetect_Result.log
+	echo "$(date) - $@"  >> /Library/Application\ Support/CrashPlan/log/userDetect_Result.log
 }
 main "$@"
