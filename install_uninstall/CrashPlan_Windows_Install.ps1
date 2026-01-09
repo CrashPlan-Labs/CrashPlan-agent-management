@@ -151,7 +151,7 @@ Uninstall-CrashPlan
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 if( $CrashPlanMSI -eq "C:\ProgramData\CrashPlan\CrashPlan.msi")
 {
-    $response = $latestWindowsClient -method Head -MaximumRedirection 0 -ErrorAction SilentlyContinue
+    $response = invoke-webRequest $latestWindowsClient -method Head -MaximumRedirection 0 -ErrorAction SilentlyContinue
     $version = $($($response.Headers.Location -split '/')[6])
     Write-Log "Downloading CrashPlan version: $version."
     try {
