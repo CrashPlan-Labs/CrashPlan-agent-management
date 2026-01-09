@@ -38,6 +38,8 @@ Install is not healthy, or there is no install. Remediation script will reinstal
 # $ErrorSystemPreference = "SilentlyContinue"
 $MinDaysHealthy = 7
 $DateFormat = 'yyyy-MM-dd'
+#Raise an error if the installed user matches any of the following patterns ex: 'admin-*','improperUser'
+$ExcludedUsers = $null
 
 # Test for all possible locations CrashPlan could be installed
 if (Test-Path -Path "C:\ProgramData\CrashPlan\.identity" -PathType Leaf) {
@@ -187,15 +189,6 @@ function CheckCrashPlanInstall {
         if ($CrashPlanRunning) {
             if ($LogsLastUpdated -lt $MinDaysHealthy) {
                 if ($Authorized) {
-                    if (-not $UserHomeValid) {
-                        $DetectionError = "Unhealthy. Authorized and running. UserHome Path does not exist on the system."
-                        $ErrorStatus = 0
-                    }
-                    if ($BackupUpdated -eq "null") {
-                        # SendLogs("Auth_no_recent_backup-$guid-")
-                        $DetectionError = "Unhealthy. Authorized and running. Backup has not happened."
-                        $ErrorStatus = 0
-                    }
                     if ($BackupUpdated -le $MinDaysHealthy) {
                         $DetectionError = "Healthy. Authorized and running."
                         $ErrorStatus = 0
@@ -207,6 +200,23 @@ function CheckCrashPlanInstall {
                         # SendLogs("Auth_no_recent_backup-$guid-")
                         $DetectionError = "Unhealthy. Authorized and running; backup has not happened for days=$BackupUpdated."
                         $ErrorStatus = 0
+                    }
+                    if (-not $UserHomeValid) {
+                        $DetectionError = "Unhealthy. Authorized and running. UserHome Path does not exist on the system."
+                        $ErrorStatus = 0
+                    }
+                    if ($BackupUpdated -eq "null") {
+                        # SendLogs("Auth_no_recent_backup-$guid-")
+                        $DetectionError = "Unhealthy. Authorized and running. Backup has not happened."
+                        $ErrorStatus = 0
+                    }
+                    #check for excluded users and mark unhealthy if found
+                    foreach ($excludedUser in $ExcludedUsers) {
+                        if ($RegisteredUser -like $excludedUser) {
+                            $DetectionError = "Unhealthy. Found excluded user."
+                            $ErrorStatus = 1
+                            break
+                        }
                     }
                 } elseif ($RegisteredUser) {
                     $DetectionError = "Unhealthy. Running not Authorized. Logs have not been updated for days=$LogsLastUpdated."
