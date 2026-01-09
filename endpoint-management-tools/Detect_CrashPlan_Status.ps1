@@ -33,6 +33,8 @@ Install is not healthy, or there is no install. Remediation script will reinstal
         CrashPlan is not installed. Trigger an install if it should be. Confirm that a version of Code42 was not installed before installing CrashPlan.
     Unhealthy. Deauthorized.
         Grab logs then uninstall/reinstall. Uninstall/Reinstall CrashPlan
+    Unhealthy. Found excluded user.
+        User matches an excluded user pattern. Trigger reinstall to fix.
 #>
 
 # $ErrorSystemPreference = "SilentlyContinue"
