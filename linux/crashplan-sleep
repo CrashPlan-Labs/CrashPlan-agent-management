@@ -1,0 +1,25 @@
+#!/bin/sh
+
+# This script stops and starts the CrashPlan service when the system
+# suspends and resumes on systemd-based Linux systems.
+#
+# This is most likely to help when backing up to a destination that can
+# have delayed or blocking I/O, such as a network-mounted filesystem or
+# a slow disk.
+#
+# The underlying issue is that heavy or blocked I/O can interfere with
+# system suspend, so stopping the application before sleep can help avoid
+# hangs.
+
+# Usage:
+# 1. Copy this script to: /etc/systemd/system-sleep/
+# 2. Run: sudo chmod +x /etc/systemd/system-sleep/crashplan-sleep
+
+case "$1" in
+  pre)
+    /usr/bin/systemctl stop crashplan.service
+    ;;
+  post)
+    /usr/bin/systemctl start crashplan.service
+    ;;
+esac
