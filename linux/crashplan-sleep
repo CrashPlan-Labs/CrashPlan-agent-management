@@ -12,7 +12,7 @@
 # hangs.
 
 # Usage:
-# 1. Copy this script to: /usr/lib/systemd/system-sleep
+# 1. Copy this script into: /usr/lib/systemd/system-sleep/
 # 2. Run: sudo chmod +x /usr/lib/systemd/system-sleep/crashplan-sleep
 
 case "$1" in
