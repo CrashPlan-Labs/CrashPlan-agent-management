@@ -12,8 +12,8 @@
 # hangs.
 
 # Usage:
-# 1. Copy this script to: /etc/systemd/system-sleep/
-# 2. Run: sudo chmod +x /etc/systemd/system-sleep/crashplan-sleep
+# 1. Copy this script to: /usr/lib/systemd/system-sleep
+# 2. Run: sudo chmod +x /usr/lib/systemd/system-sleep/crashplan-sleep
 
 case "$1" in
   pre)
