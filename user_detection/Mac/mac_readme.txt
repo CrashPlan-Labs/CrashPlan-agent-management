@@ -40,3 +40,8 @@ for the first time.
   * This script grabs the users email address from the domain records stored on the machine. 
   * The mac needs to be domain bound for this to work
   * Known admin/helpdesk user accounts should be added to the blacklist to prevent the installer from creating a user for those admin accounts. (admin1/2/3)
+
+### UserDetect_from_plists_and_dscl.sh
+ * This script is helpful if you use main MacOS MDMs for device management. 
+ * The script reads a plist on the local machine that is populated with the email associated with the device from the MDM.  
+ * It checks for JAMF Connect Plist, Kandji Global Variable Plist, Okta Network User Plist, or the CrashPlan Plist
