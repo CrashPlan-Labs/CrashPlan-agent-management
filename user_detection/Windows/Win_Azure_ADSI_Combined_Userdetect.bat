@@ -68,9 +68,9 @@ function Find-User {
         } else {
         if (!$env:HOMEDRIVE) {
             Write-Log "HOMEDRIVE environment variable not set. Defaulting to C:"
-            $AGENT_USER_HOME = "C:\Users\$username"
+            $AGENT_USER_HOME = "C:\Users\$ExplorerUser"
         } else {
-            $AGENT_USER_HOME = "$env:HOMEDRIVE\Users\$username"
+            $AGENT_USER_HOME = "$env:HOMEDRIVE\Users\$ExplorerUser"
         }
         Write-Log "User home set by appending $ExplorerUser to home path ($AGENT_USER_HOME)"
         }
