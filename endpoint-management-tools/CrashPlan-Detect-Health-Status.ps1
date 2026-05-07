@@ -3,7 +3,7 @@ Determines the health status of CrashPlan on a Windows endpoint. Used for Intune
 For detailed health states and exit codes, see the README.md file.
 #>
 
-# $ErrorSystemPreference = "SilentlyContinue"
+# $ErrorActionPreference = "SilentlyContinue"
 $MinDaysHealthy = 7
 $DateFormat = 'yyyy-MM-dd'
 #Raise an error if the installed user matches any of the following patterns ex: 'admin-*','improperUser'
@@ -76,7 +76,7 @@ function CheckCrashPlanInstall {
     if (Test-Path -Path $ServiceLogPath -PathType Leaf) {
         $ServiceLog = Get-Content -Path $ServiceLogPath
         # Get the last time the service log updated. If the service is running then the log will exist.             
-        $ServiceLogLastUpdated = (Get-Item -Path $ServiceLogPath).LastWriteTime | Get-Date -Format ${DateFormat}
+        $ServiceLogLastUpdated = (Get-Item -Path $ServiceLogPath).LastWriteTime | Get-Date -Format $DateFormat
         $LogsLastUpdated = (New-TimeSpan -Start $ServiceLogLastUpdated -End (Get-Date)).Days
         if (-not $Authorized) {
             $FirstDeployLine = $($ServiceLog | Select-String -Pattern 'Deploy:: Retrieving deployment package' | Select-Object Line -First 1)
