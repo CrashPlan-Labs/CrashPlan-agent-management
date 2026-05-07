@@ -14,7 +14,7 @@ Parses local CrashPlan log files to determine health status. Monitors key condit
 - Device authorization status
 - Backup recency (within configurable threshold, default 7 days)
 - Log update frequency
-- User home path validity
+- userHome path validity
 
 Returns detailed information suitable for inventory and reporting.
 
@@ -47,7 +47,7 @@ Pair with CrashPlan reinstall scripts to automatically remediate unhealthy insta
 **JAMF Regex Patterns:**
 ```
 .*\[Healthy. Recent Backup.\].*
-.*\[Unhealthy, userHome path doesn't exist.\].*
+.*\[Unhealthy, userHome path does not exist.\].*
 .*\[Unhealthy. System is Authorized, No recent backup.\].*
 .*\[Unhealthy. Logs not updating.\].*
 .*\[Healthy. System is likely not yet registered.\].*
@@ -63,7 +63,7 @@ Parses local CrashPlan log files and evaluates health conditions. Monitors for:
 - Service running status
 - Device authorization and user registration
 - Backup activity and log freshness
-- User home path accessibility
+- userHome path accessibility
 - Excluded user patterns
 
 Returns exit codes (0 = healthy/no action needed, 1 = remediation needed) suitable for Intune detection scripts.
@@ -78,7 +78,7 @@ Returns exit codes (0 = healthy/no action needed, 1 = remediation needed) suitab
 - **Excluded Users:** Configure `$ExcludedUsers` array to mark specific user accounts as unhealthy (e.g., excluded service accounts)
 
 **Output:**
-Exit code 0 (healthy/no action needed) or 1 (remediation needed). Returns comma-separated values or structured text with full system details.
+Exit Code 0 (healthy/no action needed) or 1 (remediation needed). Returns comma-separated values or structured text with full system details.
 
 **Auto-Remediation:**
 Use exit codes with Intune remediation scripts to automatically trigger reinstalls when unhealthy conditions are detected.
@@ -90,10 +90,10 @@ Use exit codes with Intune remediation scripts to automatically trigger reinstal
 - Healthy. Likely not yet registered.
 
 **Exit Code 0 or 1 - Monitor (Action may be needed)**
-- Unhealthy. Authorized and running but UserHome Path does not exist on the system → Trigger a reinstall to fix.
-- Unhealthy. Authorized and running but Backup has not happened → Check settings and user home validity.
+- Unhealthy. Authorized and running but userHome path does not exist on the system → Trigger a reinstall to fix.
+- Unhealthy. Authorized and running but Backup has not happened → Check settings and userHome validity.
 - Unhealthy. Authorized and running; backup has not happened for days=X → Check settings and pull logs.
-- Unhealthy. Not registered for days=X → Check detection logic and user home configuration.
+- Unhealthy. Not registered for days=X → Check detection logic and userHome configuration.
 - Unhealthy. Running not Authorized. Logs have not been updated for days=X → Check settings and pull logs.
 
 **Exit Code 1 - Unhealthy (Remediation needed)**
@@ -105,8 +105,8 @@ Use exit codes with Intune remediation scripts to automatically trigger reinstal
 
 **Log Upload Configuration:**
 The script supports optional log uploading via ShareFile or local network shares. To enable:
-1. Uncomment items in the `SendLogs` function
-2. Uncomment all calls to `SendLogs` throughout the script
+
+As part of remediation workflows you can optionally collect logs by invoking the `CrashPlan-Collect-Logs.ps1` collector (see the "Log Collection" section below).
 
 ### CrashPlan-API-Alert-Attribute.sh
 **Platform:** macOS  
@@ -137,9 +137,31 @@ XML-formatted response containing alert state or error message from the API.
 
 | Script | Method | Details |
 |--------|--------|---------|
-| Local-Health-Attribute & Detect-Health-Status | Log-Based | Parses app, service, and backup logs for comprehensive health analysis |
-| API-Alert-Attribute | API-Based | Directly queries console for device alert state; independent of local logs |
+| CrashPlan-Local-Health-Attribute.sh & CrashPlan-Detect-Health-Status.ps1 | Log-Based | Parses app, service, and backup logs for comprehensive health analysis |
+| CrashPlan-API-Alert-Attribute.sh | API-Based | Directly queries console for device alert state; independent of local logs |
 
 ## Remediation
 Available remediation scripts for automated healing: https://github.com/CrashPlan-Labs/CrashPlan-agent-management/tree/main/install_uninstall
+
+## Log Collection
+
+Use `CrashPlan-Collect-Logs.ps1` to collect and package CrashPlan logs and system event information for troubleshooting. This collector is standalone and can be run on-demand or invoked from remediation workflows.
+
+Quick usage:
+
+Manual (on-demand):
+
+```powershell
+pwsh -NoProfile -ExecutionPolicy Bypass -File "CrashPlan-Collect-Logs.ps1" -LogPrefix "Investigation-"
+```
+
+Invoke from detection/remediation (example):
+
+```powershell
+Start-Process -FilePath pwsh -ArgumentList '-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File ""$PSScriptRoot\CrashPlan-Collect-Logs.ps1"" -LogPrefix "Remediate-"' -Wait
+```
+
+Notes:
+- The collector accepts `-LogPrefix` (defaults to "CrashPlan") and writes a zip named with the prefix and hostname.
+- The collector can be used independently of remediation scripts or integrated into remediation workflows as needed.
 
