@@ -132,11 +132,9 @@ function CheckCrashPlanInstall {
                         $DetectionError = "Healthy. Authorized and running."
                         $ErrorStatus = 0
                     } elseif ($NothingToDoCount -gt 10) {
-                        # SendLogs("Auth_no_recent_backup-$guid-")
                         $DetectionError = "Healthy. Authorized and running; days since last file sent=" + $BackupUpdated + "; Nothing to do count= $NothingToDoCount."
                         $ErrorStatus = 0
                     } else {
-                        # SendLogs("Auth_no_recent_backup-$guid-")
                         $DetectionError = "Unhealthy. Authorized and running; backup has not happened for days=$BackupUpdated."
                         $ErrorStatus = 0
                     }
@@ -145,7 +143,6 @@ function CheckCrashPlanInstall {
                         $ErrorStatus = 0
                     }
                     if ($BackupUpdated -eq "null") {
-                        # SendLogs("Auth_no_recent_backup-$guid-")
                         $DetectionError = "Unhealthy. Authorized and running. Backup has not happened."
                         $ErrorStatus = 0
                     }
@@ -161,24 +158,20 @@ function CheckCrashPlanInstall {
                     $DetectionError = "Unhealthy. Running not Authorized. Logs have not been updated for days=$LogsLastUpdated."
                     $ErrorStatus = 0
                 } elseif ($LastStartTime -gt $LastDeployTime) {
-                    # SendLogs("Deauthorized-$guid-")
                     $DetectionError = "Unhealthy. Deauthorized."
                     $ErrorStatus = 1
                 } elseif ($FirstDeployTimeSpan -lt $MinDaysHealthy) {
                     $DetectionError = "Healthy. Likely not yet registered."
                     $ErrorStatus = 0
                 } else {
-                    # SendLogs("Not_yet_registered-$guid-")
                     $DetectionError = "Unhealthy. Not registered for days=$FirstDeployTimeSpan."
                     $ErrorStatus = 0
                 }
             } else {
-                # SendLogs("Logs_not_updating-")
                 $DetectionError = "Unhealthy. Logs have not been updated for days=$LogsLastUpdated."
                 $ErrorStatus = 1
             }
         } else {
-            # SendLogs("service_not_running-$guid-")
             $CrashPlanRunning = $false
             $DetectionError = "Unhealthy. CrashPlan Service is not running. Logs last updated=$ServiceLogLastUpdated"
             $ErrorStatus = 1
