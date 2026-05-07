@@ -1,40 +1,6 @@
-﻿<# Detect_CrashPlan_Status.ps1
-Used to determine the status of the CrashPlan service on an endpoint. Used for troubleshooting and to give context to a CrashPlan install.
-
-Responses and Actions:
-
-Settings:
-Script can be configured to upload logs to a CrashPlan provided sharefile location, or a local network drive. 
-To Modify uncomment items in the SendLogs function, then uncomment all the calls to SendLogs.
-
-Exit code 0
-Healthy, no action needed. Possible Values for the 'DetectionError' value:
-    Healthy. Authorized and running.
-        No Action.
-    Healthy. Likely not yet registered.
-        No Action
-
-Install may not be healthy, action likely needed. Possible Values for the  'DetectionError' value:
-    Unhealthy. Authorized and running but UserHome Path does not exist on the system.
-        CrashPlan's user detection logic returned a userHome value that does not exist on the endpoint and so the :user vairable will not work. Trigger a reinstall to fix.
-    Unhealthy. Authorized and running but Backup has not happened.
-        Check settings for this system, confirm it has a valid user home, or that there are files in that location
-    Unhealthy. Authorized and running; backup has not happened for days= X
-        Check settings, get logs.
-    Unhealthy. Not registered for days= X
-        Check detection logic, check to make sure that we have a vaid possible userHome, or username.
-Exit code 1
-Install is not healthy, or there is no install. Remediation script will reinstall on the endpoint. Possible Values for the  'DetectionError' value:
-    Unhealthy. Logs have not been updated for days=X
-        Grab logs then uninstall/reinstall. Uninstall/Reinstall CrashPlan
-    Unhealthy. CrashPlan Service is not running. Logs last updated= X
-        Service Not Running, try starting the service or pulling logs and investigating,
-    Unhealthy. CrashPlan is not a service on this endpoint; likely not installed.
-        CrashPlan is not installed. Trigger an install if it should be. Confirm that a version of Code42 was not installed before installing CrashPlan.
-    Unhealthy. Deauthorized.
-        Grab logs then uninstall/reinstall. Uninstall/Reinstall CrashPlan
-    Unhealthy. Found excluded user.
-        User matches an excluded user pattern. Trigger reinstall to fix.
+﻿<# CrashPlan-Detect-Health-Status.ps1
+Determines the health status of CrashPlan on a Windows endpoint. Used for Intune detection and troubleshooting.
+For detailed health states and exit codes, see the README.md file.
 #>
 
 # $ErrorSystemPreference = "SilentlyContinue"

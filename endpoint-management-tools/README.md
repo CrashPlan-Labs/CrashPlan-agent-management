@@ -5,7 +5,7 @@ These scripts detect the health status of CrashPlan installations across macOS a
 
 ## Scripts
 
-### CrashPlan-LocalStats.sh
+### CrashPlan-Local-Health-Attribute.sh
 **Platform:** macOS  
 **Primary Use:** JAMF extension attribute  
 **Flexibility:** Can be modified for other deployment platforms
@@ -32,7 +32,30 @@ XML-formatted status and details including authorization state, backup date, and
 **Auto-Remediation:**
 Pair with CrashPlan reinstall scripts to automatically remediate unhealthy installations detected via JAMF policies.
 
-### Detect_CrashPlan_Status.ps1
+**Health States:**
+
+| Message | Action |
+|---------|--------|
+| **Healthy. Recent Backup.** | None. CrashPlan is functioning correctly. |
+| **Healthy. System is likely not yet registered.** | None. Device was installed recently and has not yet detected a user. |
+| **Unhealthy. Logs not updating.** | Confirm settings are correct, then pull logs and determine issues. If CrashPlan is also not running, perform Uninstall/Reinstall. |
+| **Unhealthy. System is Authorized, No recent backup.** | Confirm settings are correct, then pull logs and determine issues. |
+| **Unhealthy, userHome path does not exist.** | CrashPlan has likely detected the wrong user. Confirm detection logic is valid. Then Uninstall/Reinstall. |
+| **Unhealthy. System not yet registered.** | Determine why user detection is failing, then resolve. |
+| **Unhealthy. System is Deauthorized.** | Reauthorize the device, or perform Uninstall/Reinstall. |
+
+**JAMF Regex Patterns:**
+```
+.*\[Healthy. Recent Backup.\].*
+.*\[Unhealthy, userHome path doesn't exist.\].*
+.*\[Unhealthy. System is Authorized, No recent backup.\].*
+.*\[Unhealthy. Logs not updating.\].*
+.*\[Healthy. System is likely not yet registered.\].*
+.*\[Unhealthy. System not yet registered.\].*
+.*\[Unhealthy. System is Deauthorized.\].*
+```
+
+### CrashPlan-Detect-Health-Status.ps1
 **Platform:** Windows  
 **Primary Use:** Intune integration (default support)
 
@@ -60,7 +83,32 @@ Exit code 0 (healthy/no action needed) or 1 (remediation needed). Returns comma-
 **Auto-Remediation:**
 Use exit codes with Intune remediation scripts to automatically trigger reinstalls when unhealthy conditions are detected.
 
-### CrashPlan-Alert_State.sh
+**Exit Codes and Health States:**
+
+**Exit Code 0 - Healthy (No action needed)**
+- Healthy. Authorized and running.
+- Healthy. Likely not yet registered.
+
+**Exit Code 0 or 1 - Monitor (Action may be needed)**
+- Unhealthy. Authorized and running but UserHome Path does not exist on the system → Trigger a reinstall to fix.
+- Unhealthy. Authorized and running but Backup has not happened → Check settings and user home validity.
+- Unhealthy. Authorized and running; backup has not happened for days=X → Check settings and pull logs.
+- Unhealthy. Not registered for days=X → Check detection logic and user home configuration.
+- Unhealthy. Running not Authorized. Logs have not been updated for days=X → Check settings and pull logs.
+
+**Exit Code 1 - Unhealthy (Remediation needed)**
+- Unhealthy. Logs have not been updated for days=X → Grab logs, then Uninstall/Reinstall.
+- Unhealthy. CrashPlan Service is not running. Logs last updated=X → Start service or investigate logs.
+- Unhealthy. CrashPlan is not a service on this endpoint; likely not installed. → Trigger install if needed.
+- Unhealthy. Deauthorized. → Grab logs, then Uninstall/Reinstall.
+- Unhealthy. Found excluded user. → Trigger reinstall to fix.
+
+**Log Upload Configuration:**
+The script supports optional log uploading via ShareFile or local network shares. To enable:
+1. Uncomment items in the `SendLogs` function
+2. Uncomment all calls to `SendLogs` throughout the script
+
+### CrashPlan-API-Alert-Attribute.sh
 **Platform:** macOS  
 **Primary Use:** Simple API-based status check
 
@@ -89,8 +137,8 @@ XML-formatted response containing alert state or error message from the API.
 
 | Script | Method | Details |
 |--------|--------|---------|
-| LocalStats & Detect_CrashPlan | Log-Based | Parses app, service, and backup logs for comprehensive health analysis |
-| Alert_State | API-Based | Directly queries console for device alert state; independent of local logs |
+| Local-Health-Attribute & Detect-Health-Status | Log-Based | Parses app, service, and backup logs for comprehensive health analysis |
+| API-Alert-Attribute | API-Based | Directly queries console for device alert state; independent of local logs |
 
 ## Remediation
 Available remediation scripts for automated healing: https://github.com/CrashPlan-Labs/CrashPlan-agent-management/tree/main/install_uninstall

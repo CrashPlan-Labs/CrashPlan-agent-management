@@ -1,33 +1,6 @@
 #!/bin/zsh
 #set -x #echo on
 
-#This script parses CrashPlan logs for values, and performs some logic with them to determine the status of the CrashPlan install.
-
-#The Following are the possible values for CrashPlan_message. These are states that CrashPlan can be in. Some of them have actions that can be taken to resolve the issue.
-    #Message: "Healthy. Recent Backup." 
-    #Action: None. CrashPlan is functioning correctly.
-    #Message: "Unhealthy, userHome path doesn't exist."
-    #Action: CrashPlan has likely detected the wrong user. Confirm that the detected user is accurate for the machine, and that your userHome detection logic is valid. Then Uninstall/Reinstall.
-    #Message: "Unhealthy. System is Authorized, No recent backup."
-    #Action: Confirm settings are correct, then pull logs and determine issues.
-    #Message: "Unhealthy. Logs not updating."
-    #Action: Confirm settings are correct, then pull logs and determine issues. If CrashPlan is also not running then after confirming no systematic issues Uninstall/Reinnstall.
-    #Message: "Healthy. System is likely not yet registered."
-    #Action: None. Device was installed recently and has not yet detected a user.
-    #Message: "Unhealthy. System not yet registered."
-    #Action: Determine why user detection is failing. Then resolve
-    #Message: "Unhealthy. System is Deauthorized."
-    #Action: Reauthorize the device, Uninstall, or Uninstall/Reinstall CrashPlan
-
-#Regex for matching within jamf:
-    #.*\[Healthy. Recent Backup.\].* 
-    #.*\[Unhealthy, userHome path doesn't exist.\].*
-    #.*\[Unhealthy. System is Authorized, No recent backup.\].*
-    #.*\[Unhealthy. Logs not updating.\].*
-    #.*\[Healthy. System is likely not yet registered.\].*
-    #.*\[Unhealthy. System not yet registered.\].*
-    #.*\[Unhealthy. System is Deauthorized.\].*
-
 #Define min_days_healthy as the amount of days an agent can be unregistered, not be backing up, or have the logs not being updated for before switching to an error state.
 min_days_healthy=7
 
