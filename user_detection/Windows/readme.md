@@ -1,4 +1,4 @@
-###Overview
+### Overview
 
 The scripts in this repo contain user detection methods commonly used by CrashPlan's Professional Services team
 for detection on Windows platforms.  All scripts contain user blacklists to assist IT teams with ensuring that the 
@@ -33,5 +33,9 @@ for the first time.
     separated with a space.
 
 ### UserDetect_ReadFromFile_User.bat
-  * This script reads a text file (in this script, the default location of the file is C:\Temp\CrashPlan_User.txt) for the user
-  email address, and the home directory is discovered by adding the username to the Users directory path in Windows.
+  * This script reads a text file (in this script, the default location of the file is C:\Temp\CrashPlan_User.txt) for the
+    user email address, and the home directory is discovered by adding the username to the Users directory path in Windows.
+
+### hostname_windows.bat
+ * This script reads the hostname from the environment and appends a domain to create a "dummy" username for the device to be
+   associated with. 
