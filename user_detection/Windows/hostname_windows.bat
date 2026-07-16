@@ -31,24 +31,6 @@ function Find-User {
     $AGENT_USERNAME = $hostname + '@domain.com'
     Write-Log "Email assembled by appending domain ($AGENT_USERNAME)"
 
-    $ExcludedUsers = @(
-        'user1',
-        'user2',
-        'user3',
-        'admin',
-        'Administrator',
-        'admin-*'
-    )
-
-    foreach ($pattern in $ExcludedUsers) {
-        if ([string]::IsNullOrEmpty($hostname) -or $hostname -like $pattern) {
-            $msg = "Excluded or null email address detected ($hostname). Will retry user detection in 60 minutes, or when reboot occurs."
-            Write-Log $msg
-            Write-Output $msg
-            return
-        }
-    }
-
     $homeDrive = if ($env:HOMEDRIVE) { $env:HOMEDRIVE } else { $env:SystemDrive }
     $AGENT_USER_HOME = if ($homeDrive) { "$homeDrive\Users\" } else { "$PWD\Users\" }
 
