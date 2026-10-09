@@ -1,4 +1,4 @@
-### Overview
+## Overview
 
 The scripts in this repo contain user detection methods commonly used by CrashPlan's Professional Services team
 for detection on Windows platforms.  All scripts contain user blacklists to assist IT teams with ensuring that the 
@@ -34,8 +34,14 @@ for the first time.
 
 ### UserDetect_ReadFromFile_User.bat
   * This script reads a text file (in this script, the default location of the file is C:\Temp\CrashPlan_User.txt) for the
-    user email address, and the home directory is discovered by adding the username to the Users directory path in Windows.
+  user email address, and the home directory is discovered by adding the username to the Users directory path in Windows.
+
+### UserDetect_prompt_for_email.bat
+  * The purpose of this script is as an alternative when no other scripts work and the end user has to manually input their
+  email address. The script will create a pop-up at install time prompting the user to input their email address, which will
+  then auto register the user in CrashPlan and start the backup.
 
 ### hostname_windows.bat
- * This script reads the hostname from the environment and appends a domain to create a "dummy" username for the device to be
-   associated with. 
+  * This script reads the hostname on the endpoint and appends the given domain in order to build a "dummy" username in CrashPlan.
+  This is useful in cases where there are multiple users signing into a device, but no one owner that the device should be
+  registered to. 
